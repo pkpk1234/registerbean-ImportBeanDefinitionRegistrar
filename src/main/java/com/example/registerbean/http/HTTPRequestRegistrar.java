@@ -29,6 +29,7 @@ import java.util.Set;
 /**
  * @author 李佳明
  * @date 2017.10.14
+ * 用于动态注册HTTPUtil接口的实现类
  */
 @Slf4j
 public class HTTPRequestRegistrar implements ImportBeanDefinitionRegistrar,
@@ -40,31 +41,23 @@ public class HTTPRequestRegistrar implements ImportBeanDefinitionRegistrar,
     private BeanFactory beanFactory;
 
     @Override
-    public void setBeanClassLoader(ClassLoader classLoader) {
-        this.classLoader = classLoader;
-    }
-
-    @Override
-    public void setResourceLoader(ResourceLoader resourceLoader) {
-        this.resourceLoader = resourceLoader;
-    }
-
-    @Override
-    public void setEnvironment(Environment environment) {
-        this.environment = environment;
-    }
-
-    @Override
     public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry beanDefinitionRegistry) {
         registerHttpRequest(beanDefinitionRegistry);
     }
 
+    /**
+     * 注册动态bean的主要方法
+     *
+     * @param beanDefinitionRegistry
+     */
     private void registerHttpRequest(BeanDefinitionRegistry beanDefinitionRegistry) {
         ClassPathScanningCandidateComponentProvider classScanner = getClassScanner();
         classScanner.setResourceLoader(this.resourceLoader);
+        //指定只关注标注了@HTTPUtil注解的接口
         AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(HTTPUtil.class);
-        String basePack = "com.example.registerbean";
         classScanner.addIncludeFilter(annotationTypeFilter);
+        //指定扫描的基础包
+        String basePack = "com.example.registerbean";
         Set<BeanDefinition> beanDefinitionSet = classScanner.findCandidateComponents(basePack);
         for (BeanDefinition beanDefinition : beanDefinitionSet) {
             if (beanDefinition instanceof AnnotatedBeanDefinition) {
@@ -73,11 +66,21 @@ public class HTTPRequestRegistrar implements ImportBeanDefinitionRegistrar,
         }
     }
 
+    /**
+     * 创建动态代理，并动态注册到容器中
+     *
+     * @param annotatedBeanDefinition
+     */
     private void registerBeans(AnnotatedBeanDefinition annotatedBeanDefinition) {
         String className = annotatedBeanDefinition.getBeanClassName();
         ((DefaultListableBeanFactory) this.beanFactory).registerSingleton(className, createProxy(annotatedBeanDefinition));
     }
 
+    /**
+     * 构造Class扫描器，设置了只扫描顶级接口，不扫描内部类
+     *
+     * @return
+     */
     private ClassPathScanningCandidateComponentProvider getClassScanner() {
         return new ClassPathScanningCandidateComponentProvider(false, this.environment) {
 
@@ -99,7 +102,12 @@ public class HTTPRequestRegistrar implements ImportBeanDefinitionRegistrar,
         };
     }
 
-
+    /**
+     * 创建动态代理
+     *
+     * @param annotatedBeanDefinition
+     * @return
+     */
     private Object createProxy(AnnotatedBeanDefinition annotatedBeanDefinition) {
         try {
             AnnotationMetadata annotationMetadata = annotatedBeanDefinition.getMetadata();
@@ -113,15 +121,36 @@ public class HTTPRequestRegistrar implements ImportBeanDefinitionRegistrar,
         return null;
     }
 
+    /**
+     * 创建InvocationHandler，将方法调用全部代理给DemoHttpHandler
+     *
+     * @return
+     */
     private InvocationHandler createInvocationHandler() {
         return new InvocationHandler() {
             private DemoHttpHandler demoHttpHandler = new DemoHttpHandler();
+
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
                 return demoHttpHandler.handle(method);
             }
         };
+    }
+
+    @Override
+    public void setBeanClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
+    @Override
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
+    }
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
     }
 
     @Override
