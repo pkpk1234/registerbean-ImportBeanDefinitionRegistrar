@@ -2,6 +2,10 @@ package com.example.registerbean.http;
 
 import lombok.AllArgsConstructor;
 
+/**
+ * @author 李佳明
+ * @date 2017.10.14
+ */
 @AllArgsConstructor
 public class StringHttpResult implements HttpResult<String> {
     private String result;

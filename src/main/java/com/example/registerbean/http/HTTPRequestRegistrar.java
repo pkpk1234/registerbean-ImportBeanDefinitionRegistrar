@@ -26,6 +26,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Set;
 
+/**
+ * @author 李佳明
+ * @date 2017.10.14
+ */
 @Slf4j
 public class HTTPRequestRegistrar implements ImportBeanDefinitionRegistrar,
         ResourceLoaderAware, BeanClassLoaderAware, EnvironmentAware, BeanFactoryAware {

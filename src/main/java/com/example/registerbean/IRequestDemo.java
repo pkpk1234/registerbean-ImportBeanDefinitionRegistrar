@@ -6,6 +6,10 @@ import com.example.registerbean.annotation.HTTPUtil;
 import com.example.registerbean.http.HttpResult;
 import org.springframework.stereotype.Component;
 
+/**
+ * @author 李佳明
+ * @date 2017.10.14
+ */
 @Component
 @HTTPUtil
 public interface IRequestDemo {

@@ -9,6 +9,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import static org.junit.Assert.*;
 
+/**
+ * @author 李佳明
+ * @date 2017.10.14
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Slf4j
